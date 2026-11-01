@@ -1,7 +1,7 @@
 import { register as registerGlobalShortcuts } from "@tauri-apps/plugin-global-shortcut";
 
 const invoke = window.__TAURI__?.core?.invoke;
-const storageKeys = { process: "tempo.selectedProcess", speed: "tempo.selectedSpeed" };
+const storageKeys = { speed: "tempo.selectedSpeed" };
 const slider = document.getElementById("speed-slider");
 const speedValues = [0.25, 0.5, 0.75, 1, 2, 5, 10];
 const speedText = document.getElementById("speed-number");
@@ -16,12 +16,7 @@ let toastTimer;
 let speedSyncTimer;
 let heartbeatBusy = false;
 let connectedPid = null;
-let currentProcess = readStoredProcess();
-
-function readStoredProcess() {
-  try { return JSON.parse(localStorage.getItem(storageKeys.process) || "null"); }
-  catch { return null; }
-}
+let currentProcess = null;
 function notify(message) {
   toast.textContent = message;
   toast.classList.add("show");
@@ -85,7 +80,6 @@ async function refreshProcesses() {
     if (currentProcess && !processes.some(process => process.pid === currentProcess.pid)) {
       if (connectedPid === currentProcess.pid) await stopAdapter(currentProcess.pid);
       currentProcess = null;
-      localStorage.removeItem(storageKeys.process);
       renderSelectedProcess();
     }
   } catch (error) {
@@ -141,7 +135,6 @@ function renderProcesses() {
 async function selectProcess(process) {
   if (connectedPid !== null && connectedPid !== process.pid) await stopAdapter(connectedPid);
   currentProcess = process;
-  localStorage.setItem(storageKeys.process, JSON.stringify(process));
   renderSelectedProcess();
   dialog.close();
   notify("Game selected");
