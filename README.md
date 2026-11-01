@@ -29,4 +29,12 @@ npm install
 npm run tauri dev
 ```
 
+To create a production executable with its speed-hook DLL beside it, run:
+
+```powershell
+npm run tauri -- build --no-bundle
+```
+
+The build hook compiles and copies `tempo_speed_hook.dll` into `src-tauri/target/release` so the release app can load it.
+
 The first run fetches the declared frontend and Rust dependencies. Package installation and build commands are left for you to run.

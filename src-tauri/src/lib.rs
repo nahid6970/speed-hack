@@ -89,7 +89,7 @@ fn hook_dll_path() -> Result<PathBuf, String> {
         exe_dir.join("tempo_speed_hook.dll"),
     ];
     candidates.into_iter().find(|path| path.is_file()).ok_or_else(|| {
-        "Speed-hook DLL is missing from the build. Restart `npm run tauri dev` so Cargo builds the adapter.".into()
+        "Speed-hook DLL is missing. Rebuild with `npm run tauri -- build --no-bundle` or restart `npm run tauri dev`.".into()
     })
 }
 
