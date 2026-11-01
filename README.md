@@ -29,12 +29,22 @@ npm install
 npm run tauri dev
 ```
 
-To create a production executable with its speed-hook DLL beside it, run:
+`npm run tauri dev` starts the development build and Vite server together. The debug EXE depends on that server, so do not launch the debug EXE by itself.
+
+To build a standalone production executable, run:
 
 ```powershell
-npm run tauri -- build --no-bundle
+npm run tauri -- build
 ```
 
-The build hook compiles the adapter and copies it under a content-versioned filename into `src-tauri/target/release`, then writes a small pointer file for the app. This avoids overwriting a DLL that a game still has loaded.
+The build runs Vite's production build and separately compiles the speed-hook DLL, then copies it under a content-versioned filename into `src-tauri/target/release` and writes a pointer file for the app. This avoids overwriting a DLL that a game still has loaded. Bundling is disabled in `tauri.conf.json`, so this command creates the executable without an installer.
 
-The first run fetches the declared frontend and Rust dependencies. Package installation and build commands are left for you to run.
+Launch the release executable with:
+
+```powershell
+& .\src-tauri\target\release\tempo-speed-control.exe
+```
+
+Keep the EXE beside `tempo_speed_hook.current` and the versioned hook DLL in the release folder; moving only the EXE prevents the adapter from finding its DLL. The release app does not need Vite running. If the game requires administrator privileges, run the controller at the same privilege level.
+
+The first install/build may fetch the declared frontend and Rust dependencies.
