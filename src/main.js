@@ -32,7 +32,7 @@ function setConnection(label, connected = false) {
   document.getElementById("adapter-notice").classList.toggle("adapter-ready", connected);
   const note = document.getElementById("adapter-notice-text");
   note.innerHTML = connected
-    ? "<strong>Adapter connected.</strong> Use only with an offline, single-player game. If Tempo closes, the clock returns to 1×."
+    ? "<strong>Adapter connected.</strong> Use only with an offline, single-player game. If the app closes, the clock returns to 1×."
     : "<strong>Offline single-player only.</strong> Enabling loads a timing hook into the selected game. Compatibility varies.";
 }
 function updateEnabled(enabled) {
@@ -73,7 +73,7 @@ async function refreshProcesses() {
     const empty = document.createElement("div");
     empty.className = "empty-list";
     empty.id = "process-list-empty-state";
-    empty.textContent = "Launch Tempo as a Tauri desktop app to see running Windows processes.";
+    empty.textContent = "Launch Game Speed Control as a desktop app to see running Windows processes.";
     processList.append(empty);
     return;
   }
@@ -145,7 +145,7 @@ async function selectProcess(process) {
   notify("Game selected");
 }
 async function enableAdapter() {
-  if (!invoke) throw new Error("Start Tempo as a Tauri desktop app first.");
+  if (!invoke) throw new Error("Start Game Speed Control as a desktop app first.");
   if (!currentProcess) throw new Error("Choose a running game first.");
   setConnection("Loading adapter…");
   toggle.disabled = true;
@@ -216,7 +216,7 @@ presets.forEach(button => button.addEventListener("click", () => applySpeed(butt
 document.getElementById("normal-speed-button").addEventListener("click", () => applySpeed(1, { announce: true }));
 toggle.addEventListener("click", handleToggle);
 
-// A heartbeat lets the injected adapter fail back to 1× if Tempo closes unexpectedly.
+// A heartbeat lets the injected adapter fail back to 1× if the app closes unexpectedly.
 setInterval(async () => {
   if (connectedPid === null || heartbeatBusy || !invoke) return;
   heartbeatBusy = true;
