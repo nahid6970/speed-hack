@@ -1,0 +1,7 @@
+node_modules/
+dist/
+target/
+speed-hook/target/
+src-tauri/gen/
+.env
+.env.*

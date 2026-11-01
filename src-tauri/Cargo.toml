@@ -1,0 +1,20 @@
+[package]
+name = "tempo-speed-control"
+version = "0.1.0"
+description = "A local controller UI for offline single-player game speed profiles"
+authors = ["Tempo"]
+edition = "2021"
+
+[lib]
+name = "tempo_speed_control_lib"
+crate-type = ["staticlib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+dll-syringe = { version = "0.18.2", default-features = false, features = ["syringe"] }
+serde = { version = "1", features = ["derive"] }
+sysinfo = "0.30"
+tauri = { version = "2", features = [] }
+tempo-speed-hook = { path = "../speed-hook" }

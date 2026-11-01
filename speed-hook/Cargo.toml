@@ -1,0 +1,18 @@
+[package]
+name = "tempo-speed-hook"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "tempo_speed_hook"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+minhook-sys = "0.1.1"
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Performance",
+  "Win32_System_Threading"
+] }
+

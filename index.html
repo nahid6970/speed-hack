@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d1117">
+  <title>Tempo — Game Speed Control</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <main class="window" id="speed-control-window" aria-label="Tempo game speed control">
+    <header class="titlebar" id="window-titlebar">
+      <div class="brand-mark" aria-hidden="true">ϟ</div>
+      <span class="brand">tempo</span>
+      <span class="build-label" id="build-mode-label">LOCAL CONTROL</span>
+      <div class="title-actions" aria-hidden="true"><span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span></div>
+    </header>
+    <div class="content" id="speed-control-view">
+      <section class="game-row" id="selected-game">
+        <div class="game-icon" id="game-icon" aria-hidden="true">TG</div>
+        <div class="game-copy"><label for="choose-game-button">Selected game</label><strong id="game-name">No game selected</strong><small id="game-process">Choose a running game process</small></div>
+        <button class="change-button" id="choose-game-button" type="button">Choose game</button>
+      </section>
+      <div class="rule" aria-hidden="true"></div>
+      <section id="speed-control-panel" aria-label="Speed settings">
+        <div class="speed-head"><strong>Game speed</strong><span class="connection-state" id="connection-status"><i class="dot"></i><span id="connection-label">Not connected</span></span></div>
+        <div class="speed-readout" id="speed-readout"><div class="speed-number"><span id="speed-number">1</span><small>×</small></div><div class="speed-label">Selected multiplier</div></div>
+        <div class="range-wrap"><input class="range" id="speed-slider" type="range" min="0.25" max="5" step="0.05" value="1" aria-label="Selected game speed multiplier"><div class="range-labels"><span>0.25×</span><span>1× normal</span><span>5×</span></div></div>
+        <div class="presets" id="speed-presets" aria-label="Speed presets">
+          <button class="preset" id="preset-quarter" data-speed="0.25" data-testid="speed-preset">0.25×</button>
+          <button class="preset" id="preset-half" data-speed="0.5" data-testid="speed-preset">0.5×</button>
+          <button class="preset selected" id="preset-normal" data-speed="1" data-testid="speed-preset">1×</button>
+          <button class="preset" id="preset-one-half" data-speed="1.5" data-testid="speed-preset">1.5×</button>
+          <button class="preset" id="preset-double" data-speed="2" data-testid="speed-preset">2×</button>
+          <button class="preset" id="preset-triple" data-speed="3" data-testid="speed-preset">3×</button>
+        </div>
+      </section>
+      <footer class="footer" id="speed-control-footer">
+        <button class="normal-button" id="normal-speed-button" type="button"><span aria-hidden="true">↺</span>Reset to normal</button>
+        <div class="switch-row"><span id="switch-label">Speed control off</span><button class="switch off" id="enable-speed-toggle" type="button" role="switch" aria-checked="false" aria-label="Enable speed control"></button></div>
+      </footer>
+      <div class="notice" id="adapter-notice" role="note"><span class="info" aria-hidden="true">ⓘ</span><span id="adapter-notice-text"><strong>Offline single-player only.</strong> Enabling loads a timing hook into the selected game. Compatibility varies.</span></div>
+      <div class="feedback" id="app-feedback" role="status" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <dialog class="picker" id="process-picker-dialog" aria-labelledby="picker-title">
+    <div class="picker-head" id="picker-dialog-header"><div><h2 id="picker-title">Choose a game</h2><p>Select a running process. You can refresh the list at any time.</p></div><button class="close-button" id="close-picker-button" type="button" aria-label="Close game picker">×</button></div>
+    <label class="search-box" id="process-search-label"><span aria-hidden="true">⌕</span><input id="process-search-input" type="search" placeholder="Search running apps" autocomplete="off"></label>
+    <div class="picker-toolbar" id="picker-toolbar"><span id="process-count">Loading running apps…</span><button class="text-button" id="refresh-process-list-button" type="button">Refresh</button></div>
+    <div class="process-list" id="process-list" role="listbox" aria-label="Running applications"></div>
+    <p class="picker-hint" id="picker-hint">Only processes visible to your Windows account are listed.</p>
+  </dialog>
+  <div class="toast" id="status-toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
