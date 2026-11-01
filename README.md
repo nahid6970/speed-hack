@@ -22,13 +22,43 @@ Tempo is a Windows Tauri desktop app for adjusting an offline game's clock throu
 
 Requirements: Node.js/npm, Rust nightly for the GNU Windows host, MinGW-w64 compilers for both x86_64 and i686 Windows GNU targets, and the Windows Tauri prerequisites. `dll-syringe` currently uses nightly-only Rust features, so this project pins the nightly GNU toolchain in `rust-toolchain.toml`. The project uses Tauri 2, Vite, `sysinfo`, `dll-syringe`, and the MinHook library. The x64 controller injects the x86 adapter into 32-bit games using `dll-syringe`'s `into-x86-from-x64` support.
 
-Install the Rust x86 Windows target for the pinned toolchain:
+### Install the 32-bit MinGW compiler
+
+Install MSYS2 from PowerShell if it is not already installed:
+
+```powershell
+winget install --id MSYS2.MSYS2 -e
+```
+
+Open **MSYS2 MINGW32** from the Start menu. Update the package database and install the i686 compiler:
+
+```bash
+pacman -Syu
+```
+
+If the update asks you to close the terminal, close it, reopen **MSYS2 MINGW32**, then run:
+
+```bash
+pacman -S --needed mingw-w64-i686-gcc
+```
+
+The compiler should be at `C:\msys64\mingw32\bin\i686-w64-mingw32-gcc.exe`. In the **PowerShell window you will use for building**, put the x64 MinGW tools before the MSYS2 32-bit tools on `PATH`. This is important: if MSYS2's 32-bit `windres.exe` comes first, Tauri may use it while building the 64-bit app and fail with “Can't detect target endianness and architecture.” The following path uses Scoop's stable `current` link for x64 MinGW; adjust it if your x64 MinGW is installed elsewhere.
+
+```powershell
+$env:Path = "C:\Users\nahid\scoop\apps\mingw-msvcrt\current\bin;C:\msys64\mingw32\bin;$env:Path"
+where.exe windres
+where.exe i686-w64-mingw32-gcc
+```
+
+`where.exe windres` should list the x64 MinGW `windres.exe` first. `where.exe i686-w64-mingw32-gcc` should list the compiler in `C:\msys64\mingw32\bin`. Keep this PowerShell window open for the build; its PATH change is temporary.
+
+Install the Rust x86 Windows target for the pinned toolchain from PowerShell:
 
 ```powershell
 rustup target add i686-pc-windows-gnu --toolchain nightly-x86_64-pc-windows-gnu
 ```
 
-Make sure both `x86_64-w64-mingw32-gcc` and `i686-w64-mingw32-gcc` are available on `PATH`. The build compiles separate x64 and x86 hooks and copies both beside the app.
+The build compiles separate x64 and x86 hooks and copies both beside the app.
 
 From PowerShell in `D:\speed`:
 
