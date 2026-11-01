@@ -1,6 +1,7 @@
 const invoke = window.__TAURI__?.core?.invoke;
 const storageKeys = { process: "tempo.selectedProcess", speed: "tempo.selectedSpeed" };
 const slider = document.getElementById("speed-slider");
+const speedValues = [0.25, 0.5, 0.75, 1, 2, 5, 10];
 const speedText = document.getElementById("speed-number");
 const presets = [...document.querySelectorAll("[data-testid='speed-preset']")];
 const dialog = document.getElementById("process-picker-dialog");
@@ -39,6 +40,7 @@ function updateEnabled(enabled) {
   toggle.classList.toggle("off", !enabled);
   document.getElementById("switch-label").textContent = enabled ? "Speed control on" : "Speed control off";
 }
+function selectedSpeed() { return speedValues[Number(slider.value)] ?? 1; }
 function renderSelectedProcess() {
   const name = currentProcess?.name || "No game selected";
   document.getElementById("game-name").textContent = name;
@@ -50,10 +52,11 @@ function renderSelectedProcess() {
     : "TG";
 }
 function applySpeed(value, { announce = false } = {}) {
-  const speed = Math.min(5, Math.max(0.25, Number(value)));
-  const rounded = Math.round(speed * 100) / 100;
-  const percent = ((rounded - 0.25) / 4.75) * 100;
-  slider.value = String(rounded);
+  const speed = Math.min(10, Math.max(0.25, Number(value)));
+  const rounded = speedValues.reduce((nearest, candidate) => Math.abs(candidate - speed) < Math.abs(nearest - speed) ? candidate : nearest, speedValues[0]);
+  const index = speedValues.indexOf(rounded);
+  const percent = (index / (speedValues.length - 1)) * 100;
+  slider.value = String(index);
   slider.style.background = `linear-gradient(90deg,var(--mint),#59cbb4 ${percent}%,#303944 ${percent}%)`;
   speedText.textContent = String(rounded);
   presets.forEach(button => button.classList.toggle("selected", Number(button.dataset.speed) === rounded));
@@ -147,7 +150,7 @@ async function enableAdapter() {
   setConnection("Loading adapter…");
   toggle.disabled = true;
   try {
-    const message = await invoke("connect_speed_adapter", { pid: currentProcess.pid, speed: Number(slider.value) });
+    const message = await invoke("connect_speed_adapter", { pid: currentProcess.pid, speed: selectedSpeed() });
     connectedPid = currentProcess.pid;
     updateEnabled(true);
     setConnection("Adapter connected", true);
@@ -174,7 +177,7 @@ async function stopAdapter(pid) {
 async function pushSpeed(enabled = true) {
   if (connectedPid === null || !invoke) return;
   try {
-    await invoke("set_speed_for_process", { pid: connectedPid, speed: Number(slider.value), enabled });
+    await invoke("set_speed_for_process", { pid: connectedPid, speed: selectedSpeed(), enabled });
   } catch (error) {
     connectedPid = null;
     updateEnabled(false);
@@ -208,7 +211,7 @@ document.getElementById("close-picker-button").addEventListener("click", () => d
 document.getElementById("refresh-process-list-button").addEventListener("click", refreshProcesses);
 searchInput.addEventListener("input", renderProcesses);
 dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
-slider.addEventListener("input", event => applySpeed(event.target.value));
+slider.addEventListener("input", event => applySpeed(speedValues[Number(event.target.value)]));
 presets.forEach(button => button.addEventListener("click", () => applySpeed(button.dataset.speed, { announce: true })));
 document.getElementById("normal-speed-button").addEventListener("click", () => applySpeed(1, { announce: true }));
 toggle.addEventListener("click", handleToggle);
@@ -217,7 +220,7 @@ toggle.addEventListener("click", handleToggle);
 setInterval(async () => {
   if (connectedPid === null || heartbeatBusy || !invoke) return;
   heartbeatBusy = true;
-  try { await invoke("set_speed_for_process", { pid: connectedPid, speed: Number(slider.value), enabled: true }); }
+  try { await invoke("set_speed_for_process", { pid: connectedPid, speed: selectedSpeed(), enabled: true }); }
   catch (error) {
     connectedPid = null;
     updateEnabled(false);

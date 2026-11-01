@@ -51,7 +51,7 @@ fn hook_dll_path() -> Result<PathBuf, String> {
 
 #[tauri::command]
 fn connect_speed_adapter(pid: u32, speed: f64) -> Result<String, String> {
-    if !(0.25..=5.0).contains(&speed) || !speed.is_finite() { return Err("Choose a speed between 0.25× and 5×.".into()); }
+    if !(0.25..=10.0).contains(&speed) || !speed.is_finite() { return Err("Choose a speed between 0.25× and 10×.".into()); }
     let process = OwnedProcess::from_pid(pid).map_err(|e| format!("Cannot open selected process: {e}"))?;
     let status_file = status_path(pid);
     let already_ready = fs::read_to_string(&status_file).map(|s| s.trim() == "ready").unwrap_or(false);
@@ -76,7 +76,7 @@ fn connect_speed_adapter(pid: u32, speed: f64) -> Result<String, String> {
 
 #[tauri::command]
 fn set_speed_for_process(pid: u32, speed: f64, enabled: bool) -> Result<(), String> {
-    if !speed.is_finite() || !(0.25..=5.0).contains(&speed) { return Err("Speed must be between 0.25× and 5×.".into()); }
+    if !speed.is_finite() || !(0.25..=10.0).contains(&speed) { return Err("Speed must be between 0.25× and 10×.".into()); }
     let status = fs::read_to_string(status_path(pid)).map_err(|_| "Connect the timing adapter first.".to_string())?;
     if status.trim() != "ready" { return Err("The timing adapter is not ready for this process.".into()); }
     write_control(pid, if enabled { speed } else { 1.0 })

@@ -6,7 +6,7 @@ Tempo is a Windows Tauri desktop app for adjusting an offline game's clock throu
 
 - Lists running processes and lets you select one.
 - On explicit enable, loads the x64 timing adapter into the selected process.
-- Scales `QueryPerformanceCounter`, `GetTickCount`, `GetTickCount64`, and `timeGetTime` from 0.25× to 5×.
+- Scales `QueryPerformanceCounter`, `GetTickCount`, `GetTickCount64`, and `timeGetTime` from 0.25× to 10×, with 1× centered among the presets.
 - Sends a heartbeat while connected. If Tempo closes or loses the connection, the adapter returns the multiplier to 1× within about two seconds.
 
 ## Limits and safety

@@ -49,7 +49,7 @@ struct ClockState {
 }
 
 fn speed() -> f64 {
-    f64::from_bits(SPEED_BITS.load(Ordering::Relaxed)).clamp(0.25, 5.0)
+    f64::from_bits(SPEED_BITS.load(Ordering::Relaxed)).clamp(0.25, 10.0)
 }
 
 unsafe fn original_qpc() -> Option<QpcFn> {
@@ -212,7 +212,7 @@ fn control_thread(pid: u32) {
             .filter(|modified| modified.elapsed().map(|age| age < Duration::from_secs(2)).unwrap_or(false))
             .and_then(|_| fs::read_to_string(&path).ok())
             .and_then(|text| text.trim().parse::<f64>().ok())
-            .filter(|value| value.is_finite() && (0.25..=5.0).contains(value))
+            .filter(|value| value.is_finite() && (0.25..=10.0).contains(value))
             .unwrap_or(1.0);
         SPEED_BITS.store(next_speed.to_bits(), Ordering::Relaxed);
         thread::sleep(Duration::from_millis(100));

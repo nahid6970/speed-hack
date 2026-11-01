@@ -25,14 +25,15 @@
       <section id="speed-control-panel" aria-label="Speed settings">
         <div class="speed-head"><strong>Game speed</strong><span class="connection-state" id="connection-status"><i class="dot"></i><span id="connection-label">Not connected</span></span></div>
         <div class="speed-readout" id="speed-readout"><div class="speed-number"><span id="speed-number">1</span><small>×</small></div><div class="speed-label">Selected multiplier</div></div>
-        <div class="range-wrap"><input class="range" id="speed-slider" type="range" min="0.25" max="5" step="0.05" value="1" aria-label="Selected game speed multiplier"><div class="range-labels"><span>0.25×</span><span>1× normal</span><span>5×</span></div></div>
+        <div class="range-wrap"><input class="range" id="speed-slider" type="range" min="0" max="6" step="1" value="3" aria-label="Selected game speed multiplier"><div class="range-labels" id="speed-range-labels"><span>0.25×</span><span>0.5×</span><span>0.75×</span><span>1× normal</span><span>2×</span><span>5×</span><span>10×</span></div></div>
         <div class="presets" id="speed-presets" aria-label="Speed presets">
           <button class="preset" id="preset-quarter" data-speed="0.25" data-testid="speed-preset">0.25×</button>
           <button class="preset" id="preset-half" data-speed="0.5" data-testid="speed-preset">0.5×</button>
+          <button class="preset" id="preset-three-quarter" data-speed="0.75" data-testid="speed-preset">0.75×</button>
           <button class="preset selected" id="preset-normal" data-speed="1" data-testid="speed-preset">1×</button>
-          <button class="preset" id="preset-one-half" data-speed="1.5" data-testid="speed-preset">1.5×</button>
           <button class="preset" id="preset-double" data-speed="2" data-testid="speed-preset">2×</button>
-          <button class="preset" id="preset-triple" data-speed="3" data-testid="speed-preset">3×</button>
+          <button class="preset" id="preset-five" data-speed="5" data-testid="speed-preset">5×</button>
+          <button class="preset" id="preset-ten" data-speed="10" data-testid="speed-preset">10×</button>
         </div>
       </section>
       <footer class="footer" id="speed-control-footer">
