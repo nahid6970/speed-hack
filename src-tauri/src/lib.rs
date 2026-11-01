@@ -3,7 +3,7 @@ use dll_syringe::{process::OwnedProcess, Syringe};
 // injected into the selected game process at runtime.
 use tempo_speed_hook as _;
 use serde::Serialize;
-use std::{fs, path::PathBuf, thread, time::{Duration, Instant}};
+use std::{fs, fs::File, io::{Read, Seek, SeekFrom}, path::PathBuf, thread, time::{Duration, Instant}};
 use sysinfo::System;
 use tauri::{AppHandle, Emitter};
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
@@ -83,31 +83,59 @@ fn status_path(pid: u32) -> PathBuf { std::env::temp_dir().join(format!("tempo-s
 fn write_control(pid: u32, speed: f64) -> Result<(), String> {
     fs::write(control_path(pid), format!("{speed:.4}\n")).map_err(|e| format!("Could not update the game speed: {e}"))
 }
-fn hook_dll_path() -> Result<PathBuf, String> {
+#[derive(Clone, Copy)]
+enum ProcessArchitecture { X86, X64 }
+
+fn process_architecture(pid: u32) -> Result<ProcessArchitecture, String> {
+    let executable = list_processes()?.into_iter().find(|process| process.pid == pid)
+        .and_then(|process| process.executable)
+        .ok_or("Cannot locate the selected process executable")?;
+    let mut file = File::open(&executable).map_err(|e| format!("Cannot inspect the selected executable: {e}"))?;
+    let mut dos_header = [0u8; 64];
+    file.read_exact(&mut dos_header).map_err(|e| format!("Cannot read the selected executable header: {e}"))?;
+    if &dos_header[0..2] != b"MZ" { return Err("The selected process is not a supported Windows executable".into()); }
+    let pe_offset = u32::from_le_bytes(dos_header[0x3c..0x40].try_into().unwrap()) as u64;
+    file.seek(SeekFrom::Start(pe_offset)).map_err(|e| format!("Cannot inspect executable architecture: {e}"))?;
+    let mut pe_header = [0u8; 6];
+    file.read_exact(&mut pe_header).map_err(|e| format!("Cannot read executable architecture: {e}"))?;
+    if &pe_header[0..4] != b"PE\0\0" { return Err("The selected process has an invalid executable header".into()); }
+    match u16::from_le_bytes([pe_header[4], pe_header[5]]) {
+        0x014c => Ok(ProcessArchitecture::X86),
+        0x8664 => Ok(ProcessArchitecture::X64),
+        _ => Err("Only x86 and x64 Windows games are supported".into()),
+    }
+}
+
+fn hook_dll_path(architecture: ProcessArchitecture) -> Result<PathBuf, String> {
     let exe = std::env::current_exe().map_err(|e| format!("Cannot locate Tempo: {e}"))?;
     let exe_dir = exe.parent().ok_or("Tempo executable directory is unavailable")?;
-    let versioned_dll = fs::read_to_string(exe_dir.join("tempo_speed_hook.current"))
+    let (arch_name, marker) = match architecture {
+        ProcessArchitecture::X86 => ("x86", "tempo_speed_hook_x86.current"),
+        ProcessArchitecture::X64 => ("x64", "tempo_speed_hook_x64.current"),
+    };
+    let versioned_dll = fs::read_to_string(exe_dir.join(marker))
         .ok()
         .map(|filename| exe_dir.join(filename.trim()));
     let mut candidates = versioned_dll.into_iter().chain([
-        exe_dir.join("deps").join("tempo_speed_hook.dll"),
-        exe_dir.join("tempo_speed_hook.dll"),
+        exe_dir.join(format!("tempo_speed_hook_{arch_name}.dll")),
+        exe_dir.join("deps").join(format!("tempo_speed_hook_{arch_name}.dll")),
     ]);
     candidates.find(|path| path.is_file()).ok_or_else(|| {
-        "Speed-hook DLL is missing. Rebuild with `npm run tauri -- build --no-bundle` or restart `npm run tauri dev`.".into()
+        "Speed-hook DLL is missing. Run `npm run tauri dev` or rebuild with `npm run tauri -- build`.".into()
     })
 }
 
 #[tauri::command]
 fn connect_speed_adapter(pid: u32, speed: f64) -> Result<String, String> {
     if !(0.25..=10.0).contains(&speed) || !speed.is_finite() { return Err("Choose a speed between 0.25 and 10.".into()); }
+    let architecture = process_architecture(pid)?;
     let process = OwnedProcess::from_pid(pid).map_err(|e| format!("Cannot open selected process: {e}"))?;
     let status_file = status_path(pid);
     let already_ready = fs::read_to_string(&status_file).map(|s| s.trim() == "ready").unwrap_or(false);
     write_control(pid, speed)?;
     if already_ready { return Ok("Speed adapter is already active for this process.".into()); }
 
-    let dll = hook_dll_path()?;
+    let dll = hook_dll_path(architecture)?;
     let syringe = Syringe::for_process(process);
     syringe.find_or_inject(&dll).map_err(|e| format!("Could not load the timing adapter into the selected process: {e}"))?;
 

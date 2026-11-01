@@ -13,7 +13,7 @@ crate-type = ["staticlib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-dll-syringe = { version = "0.18.2", default-features = false, features = ["syringe"] }
+dll-syringe = { version = "0.18.2", default-features = false, features = ["syringe", "into-x86-from-x64"] }
 serde = { version = "1", features = ["derive"] }
 sysinfo = "0.30"
 tauri = { version = "2", features = [] }
