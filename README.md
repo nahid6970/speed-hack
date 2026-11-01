@@ -35,6 +35,6 @@ To create a production executable with its speed-hook DLL beside it, run:
 npm run tauri -- build --no-bundle
 ```
 
-The build hook compiles and copies `tempo_speed_hook.dll` into `src-tauri/target/release` so the release app can load it.
+The build hook compiles the adapter and copies it under a content-versioned filename into `src-tauri/target/release`, then writes a small pointer file for the app. This avoids overwriting a DLL that a game still has loaded.
 
 The first run fetches the declared frontend and Rust dependencies. Package installation and build commands are left for you to run.

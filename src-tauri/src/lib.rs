@@ -86,11 +86,14 @@ fn write_control(pid: u32, speed: f64) -> Result<(), String> {
 fn hook_dll_path() -> Result<PathBuf, String> {
     let exe = std::env::current_exe().map_err(|e| format!("Cannot locate Tempo: {e}"))?;
     let exe_dir = exe.parent().ok_or("Tempo executable directory is unavailable")?;
-    let candidates = [
+    let versioned_dll = fs::read_to_string(exe_dir.join("tempo_speed_hook.current"))
+        .ok()
+        .map(|filename| exe_dir.join(filename.trim()));
+    let mut candidates = versioned_dll.into_iter().chain([
         exe_dir.join("deps").join("tempo_speed_hook.dll"),
         exe_dir.join("tempo_speed_hook.dll"),
-    ];
-    candidates.into_iter().find(|path| path.is_file()).ok_or_else(|| {
+    ]);
+    candidates.find(|path| path.is_file()).ok_or_else(|| {
         "Speed-hook DLL is missing. Rebuild with `npm run tauri -- build --no-bundle` or restart `npm run tauri dev`.".into()
     })
 }
