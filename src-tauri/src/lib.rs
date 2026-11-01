@@ -7,7 +7,8 @@ use std::{fs, path::PathBuf, thread, time::{Duration, Instant}};
 use sysinfo::System;
 use tauri::{AppHandle, Emitter};
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, VK_ADD, VK_DECIMAL, VK_DELETE, VK_INSERT, VK_MENU, VK_NUMPAD0, VK_SUBTRACT,
+    GetAsyncKeyState, VK_ADD, VK_DECIMAL, VK_DELETE, VK_END, VK_INSERT, VK_MENU, VK_NUMPAD0,
+    VK_NUMPAD1, VK_SUBTRACT,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
@@ -55,8 +56,8 @@ fn key_is_down(key: u16) -> bool {
 
 fn start_hotkey_poller(app: AppHandle) {
     thread::spawn(move || {
-        let mut was_pressed = [false; 4];
-        let events = ["attach", "increase", "decrease", "toggle"];
+        let mut was_pressed = [false; 5];
+        let events = ["attach", "increase", "decrease", "toggle", "reset"];
         loop {
             let alt_down = key_is_down(VK_MENU);
             let pressed = [
@@ -64,6 +65,7 @@ fn start_hotkey_poller(app: AppHandle) {
                 alt_down && key_is_down(VK_ADD),
                 alt_down && key_is_down(VK_SUBTRACT),
                 alt_down && (key_is_down(VK_DECIMAL) || key_is_down(VK_DELETE)),
+                alt_down && (key_is_down(VK_NUMPAD1) || key_is_down(VK_END)),
             ];
             for (index, is_pressed) in pressed.iter().enumerate() {
                 if *is_pressed && !was_pressed[index] {

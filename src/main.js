@@ -236,6 +236,7 @@ async function listenForHotkeys() {
         case "increase": adjustSpeed(1); break;
         case "decrease": adjustSpeed(-1); break;
         case "toggle": void handleToggle(); break;
+        case "reset": applySpeed(1, { announce: true }); break;
       }
     });
   } catch (error) {
