@@ -5,6 +5,7 @@ use tempo_speed_hook as _;
 use serde::Serialize;
 use std::{fs, path::PathBuf, thread, time::{Duration, Instant}};
 use sysinfo::System;
+use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +31,17 @@ fn list_processes() -> Result<Vec<RunningProcess>, String> {
     }).collect();
     processes.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()).then(a.pid.cmp(&b.pid)));
     Ok(processes)
+}
+
+#[tauri::command]
+fn get_foreground_process() -> Result<RunningProcess, String> {
+    let window = unsafe { GetForegroundWindow() };
+    if window.is_null() { return Err("Could not identify the foreground app.".into()); }
+    let mut pid = 0u32;
+    unsafe { GetWindowThreadProcessId(window, &mut pid); }
+    if pid == 0 { return Err("Could not identify the foreground app process.".into()); }
+    list_processes()?.into_iter().find(|process| process.pid == pid)
+        .ok_or_else(|| "The foreground window is not a selectable app. Press Alt+Num0 while the game is active.".into())
 }
 
 fn control_path(pid: u32) -> PathBuf { std::env::temp_dir().join(format!("tempo-speed-{pid}.cfg")) }
@@ -91,9 +103,10 @@ fn disconnect_speed_adapter(pid: u32) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![list_processes, connect_speed_adapter, set_speed_for_process, disconnect_speed_adapter])
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![list_processes, get_foreground_process, connect_speed_adapter, set_speed_for_process, disconnect_speed_adapter])
         .run(tauri::generate_context!())
-        .expect("error while running Tempo");
+        .expect("error while running Game Speed Control");
 }
 
 

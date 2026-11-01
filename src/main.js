@@ -1,3 +1,5 @@
+import { register as registerGlobalShortcuts } from "@tauri-apps/plugin-global-shortcut";
+
 const invoke = window.__TAURI__?.core?.invoke;
 const storageKeys = { process: "tempo.selectedProcess", speed: "tempo.selectedSpeed" };
 const slider = document.getElementById("speed-slider");
@@ -164,6 +166,22 @@ async function enableAdapter() {
     toggle.disabled = false;
   }
 }
+async function attachForegroundApp() {
+  if (!invoke) return notify("Start the desktop app to use global shortcuts.");
+  try {
+    const process = await invoke("get_foreground_process");
+    if (connectedPid === process.pid) return notify("Adapter is already connected to this app.");
+    await selectProcess(process);
+    await enableAdapter();
+  } catch (error) {
+    notify(String(error?.message || error));
+  }
+}
+function adjustSpeed(step) {
+  const index = speedValues.indexOf(selectedSpeed());
+  const nextIndex = Math.max(0, Math.min(speedValues.length - 1, index + step));
+  if (nextIndex !== index) applySpeed(speedValues[nextIndex], { announce: true });
+}
 async function stopAdapter(pid) {
   try {
     if (invoke) await invoke("disconnect_speed_adapter", { pid });
@@ -215,6 +233,25 @@ slider.addEventListener("input", event => applySpeed(speedValues[Number(event.ta
 presets.forEach(button => button.addEventListener("click", () => applySpeed(button.dataset.speed, { announce: true })));
 document.getElementById("normal-speed-button").addEventListener("click", () => applySpeed(1, { announce: true }));
 toggle.addEventListener("click", handleToggle);
+
+async function registerHotkeys() {
+  if (!invoke) return;
+  const shortcuts = ["Alt+Numpad0", "Alt+NumpadAdd", "Alt+NumpadSubtract", "Alt+NumpadDecimal"];
+  try {
+    await registerGlobalShortcuts(shortcuts, event => {
+      if (event.state !== "Pressed") return;
+      switch (event.shortcut.toLowerCase()) {
+        case "alt+numpad0": void attachForegroundApp(); break;
+        case "alt+numpadadd": adjustSpeed(1); break;
+        case "alt+numpadsubtract": adjustSpeed(-1); break;
+        case "alt+numpaddecimal": void handleToggle(); break;
+      }
+    });
+  } catch (error) {
+    notify(`Could not register global shortcuts: ${String(error)}`);
+  }
+}
+void registerHotkeys();
 
 // A heartbeat lets the injected adapter fail back to 1× if the app closes unexpectedly.
 setInterval(async () => {
