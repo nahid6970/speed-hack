@@ -32,7 +32,7 @@ function setConnection(label, connected = false) {
   document.getElementById("adapter-notice").classList.toggle("adapter-ready", connected);
   const note = document.getElementById("adapter-notice-text");
   note.innerHTML = connected
-    ? "<strong>Adapter connected.</strong> Use only with an offline, single-player game. If the app closes, the clock returns to 1×."
+    ? "<strong>Adapter connected.</strong> Use only with an offline, single-player game. If the app closes, the clock returns to 1."
     : "<strong>Offline single-player only.</strong> Enabling loads a timing hook into the selected game. Compatibility varies.";
 }
 function updateEnabled(enabled) {
@@ -62,7 +62,7 @@ function applySpeed(value, { announce = false } = {}) {
   presets.forEach(button => button.classList.toggle("selected", Number(button.dataset.speed) === rounded));
   localStorage.setItem(storageKeys.speed, String(rounded));
   if (connectedPid !== null) queueSpeedUpdate();
-  else if (announce) notify(`Selected ${rounded}×. Connect the adapter to apply it.`);
+  else if (announce) notify(`Selected ${rounded}. Connect the adapter to apply it.`);
 }
 async function refreshProcesses() {
   document.getElementById("process-count").textContent = "Reading running apps…";
