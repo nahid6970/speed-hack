@@ -5,6 +5,10 @@ use tempo_speed_hook as _;
 use serde::Serialize;
 use std::{fs, path::PathBuf, thread, time::{Duration, Instant}};
 use sysinfo::System;
+use tauri::{AppHandle, Emitter};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+    GetAsyncKeyState, VK_ADD, VK_DECIMAL, VK_DELETE, VK_INSERT, VK_MENU, VK_NUMPAD0, VK_SUBTRACT,
+};
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
 #[derive(Debug, Clone, Serialize)]
@@ -42,6 +46,34 @@ fn get_foreground_process() -> Result<RunningProcess, String> {
     if pid == 0 { return Err("Could not identify the foreground app process.".into()); }
     list_processes()?.into_iter().find(|process| process.pid == pid)
         .ok_or_else(|| "The foreground window is not a selectable app. Press Alt+Num0 while the game is active.".into())
+}
+
+fn key_is_down(key: u16) -> bool {
+    // GetAsyncKeyState's high bit is set while the key is currently held.
+    unsafe { GetAsyncKeyState(i32::from(key)) < 0 }
+}
+
+fn start_hotkey_poller(app: AppHandle) {
+    thread::spawn(move || {
+        let mut was_pressed = [false; 4];
+        let events = ["attach", "increase", "decrease", "toggle"];
+        loop {
+            let alt_down = key_is_down(VK_MENU);
+            let pressed = [
+                alt_down && (key_is_down(VK_NUMPAD0) || key_is_down(VK_INSERT)),
+                alt_down && key_is_down(VK_ADD),
+                alt_down && key_is_down(VK_SUBTRACT),
+                alt_down && (key_is_down(VK_DECIMAL) || key_is_down(VK_DELETE)),
+            ];
+            for (index, is_pressed) in pressed.iter().enumerate() {
+                if *is_pressed && !was_pressed[index] {
+                    let _ = app.emit("game-speed-hotkey", events[index]);
+                }
+            }
+            was_pressed = pressed;
+            thread::sleep(Duration::from_millis(8));
+        }
+    });
 }
 
 fn control_path(pid: u32) -> PathBuf { std::env::temp_dir().join(format!("tempo-speed-{pid}.cfg")) }
@@ -103,7 +135,10 @@ fn disconnect_speed_adapter(pid: u32) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .setup(|app| {
+            start_hotkey_poller(app.handle().clone());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![list_processes, get_foreground_process, connect_speed_adapter, set_speed_for_process, disconnect_speed_adapter])
         .run(tauri::generate_context!())
         .expect("error while running Game Speed Control");

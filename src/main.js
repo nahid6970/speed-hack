@@ -1,4 +1,4 @@
-import { register as registerGlobalShortcuts } from "@tauri-apps/plugin-global-shortcut";
+import { listen as listenTauriEvent } from "@tauri-apps/api/event";
 
 const invoke = window.__TAURI__?.core?.invoke;
 const storageKeys = { speed: "tempo.selectedSpeed" };
@@ -227,24 +227,22 @@ presets.forEach(button => button.addEventListener("click", () => applySpeed(butt
 document.getElementById("normal-speed-button").addEventListener("click", () => applySpeed(1, { announce: true }));
 toggle.addEventListener("click", handleToggle);
 
-async function registerHotkeys() {
+async function listenForHotkeys() {
   if (!invoke) return;
-  const shortcuts = ["Alt+Numpad0", "Alt+NumpadAdd", "Alt+NumpadSubtract", "Alt+NumpadDecimal"];
   try {
-    await registerGlobalShortcuts(shortcuts, event => {
-      if (event.state !== "Pressed") return;
-      switch (event.shortcut.toLowerCase()) {
-        case "alt+numpad0": void attachForegroundApp(); break;
-        case "alt+numpadadd": adjustSpeed(1); break;
-        case "alt+numpadsubtract": adjustSpeed(-1); break;
-        case "alt+numpaddecimal": void handleToggle(); break;
+    await listenTauriEvent("game-speed-hotkey", event => {
+      switch (event.payload) {
+        case "attach": void attachForegroundApp(); break;
+        case "increase": adjustSpeed(1); break;
+        case "decrease": adjustSpeed(-1); break;
+        case "toggle": void handleToggle(); break;
       }
     });
   } catch (error) {
-    notify(`Could not register global shortcuts: ${String(error)}`);
+    notify(`Could not listen for keyboard shortcuts: ${String(error)}`);
   }
 }
-void registerHotkeys();
+void listenForHotkeys();
 
 // A heartbeat lets the injected adapter fail back to 1× if the app closes unexpectedly.
 setInterval(async () => {

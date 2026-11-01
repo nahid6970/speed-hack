@@ -4,7 +4,6 @@
   "description": "Permissions for the Game Speed Control window",
   "windows": ["main"],
   "permissions": [
-    "core:default",
-    "global-shortcut:allow-register"
+    "core:default"
   ]
 }
