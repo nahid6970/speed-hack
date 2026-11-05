@@ -7,7 +7,7 @@ use std::{fs, fs::File, io::{Read, Seek, SeekFrom}, path::PathBuf, thread, time:
 use sysinfo::System;
 use tauri::{AppHandle, Emitter};
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, VK_ADD, VK_DECIMAL, VK_DELETE, VK_END, VK_INSERT, VK_MENU, VK_NUMPAD0,
+    GetAsyncKeyState, VK_ADD, VK_DECIMAL, VK_END, VK_INSERT, VK_MENU, VK_NUMPAD0,
     VK_NUMPAD1, VK_SUBTRACT,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
