@@ -62,8 +62,8 @@ fn start_hotkey_poller(app: AppHandle) {
             let alt_down = key_is_down(VK_MENU);
             let pressed = [
                 alt_down && (key_is_down(VK_NUMPAD0) || key_is_down(VK_INSERT)),
-                alt_down && key_is_down(VK_ADD),
-                alt_down && key_is_down(VK_SUBTRACT),
+                key_is_down(VK_ADD),
+                key_is_down(VK_SUBTRACT),
                 key_is_down(VK_DECIMAL),
                 alt_down && (key_is_down(VK_NUMPAD1) || key_is_down(VK_END)),
             ];

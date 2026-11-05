@@ -8,7 +8,7 @@ Tempo is a Windows Tauri desktop app for adjusting an offline game's clock throu
 - On explicit enable, detects whether the selected game is x86 or x64 and loads the matching timing adapter.
 - Scales `QueryPerformanceCounter`, `GetTickCount`, `GetTickCount64`, and `timeGetTime` from 0.25× to 10×, with 1× centered among the presets.
 - Sends a heartbeat while connected. If Tempo closes or loses the connection, the adapter returns the multiplier to 1× within about two seconds.
-- Global numpad shortcuts are read from Windows key state so they can work while a game has focus: `Alt+Num0` attaches the foreground app, `Alt+Num+` and `Alt+Num-` adjust one preset step, `NumDel` toggles speed control, and `Alt+Num1` resets to normal speed. With Num Lock off, Num0/Num1/NumDel also work as Insert/End/Delete.
+- Global numpad shortcuts are read from Windows key state so they can work while a game has focus: `Alt+Num0` attaches the foreground app, `Num+` and `Num-` adjust one preset step, `NumDel` toggles speed control, and `Alt+Num1` resets to normal speed. With Num Lock off, Num0/Num1/NumDel also work as Insert/End/Delete.
 
 ## Limits and safety
 
