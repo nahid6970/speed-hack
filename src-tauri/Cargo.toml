@@ -5,17 +5,10 @@ description = "A local controller UI for offline single-player game speed profil
 authors = ["Tempo"]
 edition = "2021"
 
-[lib]
-name = "tempo_speed_control_lib"
-crate-type = ["staticlib", "rlib"]
-
-[build-dependencies]
-tauri-build = { version = "2", features = [] }
-
 [dependencies]
+gpui = { version = "0.2.2", default-features = false, features = ["windows-manifest"] }
 dll-syringe = { version = "0.18.2", default-features = false, features = ["syringe", "into-x86-from-x64"] }
 serde = { version = "1", features = ["derive"] }
 sysinfo = "0.30"
-tauri = { version = "2", features = [] }
 tempo-speed-hook = { path = "../speed-hook" }
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse"] }

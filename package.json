@@ -4,16 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "dev": "cargo run --manifest-path src-tauri/Cargo.toml",
+    "build": "cargo build --manifest-path src-tauri/Cargo.toml --release",
     "build:hook": "cargo build --manifest-path speed-hook/Cargo.toml --release && cargo build --manifest-path speed-hook/Cargo.toml --release --target i686-pc-windows-gnu && node scripts/copy-hook.js",
-    "tauri": "tauri"
+    "build:windows": "npm run build:hook && npm run build"
   },
-  "dependencies": {
-    "@tauri-apps/api": "^2.12.4"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0",
-    "vite": "^6.0.0"
-  }
+  "devDependencies": {}
 }
